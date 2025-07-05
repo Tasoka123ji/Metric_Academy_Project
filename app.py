@@ -11,8 +11,8 @@ import os
 app = Flask(__name__, template_folder='templates')
 
 # ✅ Config
-app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
-app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE_URL')
+app.config['SECRET_KEY'] = 'your_secret_key'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://vkn:LJI8O5ruUzgN4BIbFKZKTP0vgG8p6E9r@dpg-d1j1r72dbo4c73c0umlg-a.oregon-postgres.render.com/metric_team'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
