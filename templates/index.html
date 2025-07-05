@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Django Chatbot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6c5ce7;
+            --primary-dark: #5649c0;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --gray: #adb5bd;
+            --danger: #d63031;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f5f6fa;
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Auth Forms */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--primary), #a29bfe);
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+            overflow: hidden;
+        }
+
+        .auth-header {
+            background: var(--primary);
+            color: white;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .auth-header h2 {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .auth-body {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--gray);
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.2);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 25px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-3 {
+            margin-top: 15px;
+        }
+
+        .switch-auth {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .switch-auth a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* Chat Interface */
+        .chat-container {
+            display: none;
+            height: 100vh;
+        }
+
+        .chat-header {
+            background: white;
+            padding: 15px 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h2 {
+            color: var(--primary);
+        }
+
+        .logout-btn {
+            background: var(--danger);
+            padding: 8px 15px;
+            border-radius: 6px;
+            color: white;
+            text-decoration: none;
+        }
+
+        .chat-main {
+            display: flex;
+            height: calc(100vh - 70px);
+        }
+
+        .chat-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+        }
+
+        .message-user {
+            background: var(--primary);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 70%;
+            margin-left: auto;
+        }
+
+        .message-bot {
+            background: #f1f3f5;
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 70%;
+        }
+
+        .input-area {
+            display: flex;
+            background: white;
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            resize: none;
+        }
+
+        #send-btn {
+            margin-left: 10px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 20px;
+            cursor: pointer;
+        }
+
+        .error-message {
+            color: var(--danger);
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Authentication Container -->
+    <div class="auth-container" id="auth-container">
+        <div class="auth-card" id="login-card">
+            <div class="auth-header">
+                <h2>Welcome Back</h2>
+                <p>Login to your chatbot account</p>
+            </div>
+            <div class="auth-body">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-username">Username</label>
+                        <input type="text" id="login-username" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn">Login</button>
+                    <div id="login-error" class="error-message"></div>
+                </form>
+                <div class="switch-auth mt-3">
+                    Don't have an account? <a href="#" id="switch-to-register">Register</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="auth-card" id="register-card" style="display: none;">
+            <div class="auth-header">
+                <h2>Create Account</h2>
+                <p>Join our chatbot platform</p>
+            </div>
+            <div class="auth-body">
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="register-username">Username</label>
+                        <input type="text" id="register-username" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">Password</label>
+                        <input type="password" id="register-password" class="form-control" required>
+                    </div>
+                    <button type="submit" class="btn">Register</button>
+                    <div id="register-error" class="error-message"></div>
+                </form>
+                <div class="switch-auth mt-3">
+                    Already have an account? <a href="#" id="switch-to-login">Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Container -->
+    <div class="chat-container" id="chat-container">
+        <div class="chat-header">
+            <h2>Django Chatbot</h2>
+            <a href="#" class="logout-btn" id="logout-btn">Logout</a>
+        </div>
+        <div class="chat-main">
+            <div class="chat-area">
+                <div class="messages" id="messages">
+                    <!-- Messages will appear here -->
+                </div>
+                <div class="input-area">
+                    <textarea id="user-input" placeholder="Type your message..." rows="1"></textarea>
+                    <button id="send-btn">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const loginCard = document.getElementById('login-card');
+        const registerCard = document.getElementById('register-card');
+        const switchToRegister = document.getElementById('switch-to-register');
+        const switchToLogin = document.getElementById('switch-to-login');
+        const loginForm = document.getElementById('login-form');
+        const registerForm = document.getElementById('register-form');
+        const authContainer = document.getElementById('auth-container');
+        const chatContainer = document.getElementById('chat-container');
+        const logoutBtn = document.getElementById('logout-btn');
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const messagesContainer = document.getElementById('messages');
+        const loginError = document.getElementById('login-error');
+        const registerError = document.getElementById('register-error');
+
+        // API Configuration
+        const API_BASE_URL = 'http://127.0.0.1:5000';
+        let authToken = localStorage.getItem('chatbot_token');
+
+        // Check if user is already logged in
+        if (authToken) {
+            showChatInterface();
+        }
+
+        // Event Listeners
+        switchToRegister.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginCard.style.display = 'none';
+            registerCard.style.display = 'block';
+            registerError.textContent = '';
+        });
+
+        switchToLogin.addEventListener('click', (e) => {
+            e.preventDefault();
+            registerCard.style.display = 'none';
+            loginCard.style.display = 'block';
+            loginError.textContent = '';
+        });
+
+        loginForm.addEventListener('submit', handleLogin);
+        registerForm.addEventListener('submit', handleRegister);
+        logoutBtn.addEventListener('click', handleLogout);
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Functions
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            loginError.textContent = '';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (data.token) {
+                        localStorage.setItem('chatbot_token', data.token);
+                        authToken = data.token;
+                        showChatInterface();
+                    } else {
+                        loginError.textContent = 'Login successful but no token received';
+                    }
+                } else {
+                    loginError.textContent = data.detail || 'Invalid credentials';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                loginError.textContent = 'Failed to connect to server';
+            }
+        }
+
+        async function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('register-username').value;
+            const password = document.getElementById('register-password').value;
+            registerError.textContent = '';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Registration successful! Please login.');
+                    registerCard.style.display = 'none';
+                    loginCard.style.display = 'block';
+                    document.getElementById('login-username').value = username;
+                } else {
+                    if (data.username) {
+                        registerError.textContent = data.username[0];
+                    } else {
+                        registerError.textContent = 'Registration failed';
+                    }
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                registerError.textContent = 'Failed to connect to server';
+            }
+        }
+
+        function handleLogout(e) {
+            e.preventDefault();
+            localStorage.removeItem('chatbot_token');
+            authToken = null;
+            showAuthInterface();
+            messagesContainer.innerHTML = '';
+        }
+
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message || !authToken) return;
+
+            // Add user message to UI
+            addMessage(message, 'user');
+            userInput.value = '';
+
+            try {
+                // Send to API
+                const response = await fetch(`${API_BASE_URL}/chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Token ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        question: message
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    addMessage(data.answer, 'bot');
+                } else {
+                    addMessage("Sorry, I encountered an error.", 'bot');
+                }
+            } catch (error) {
+                console.error('Chat error:', error);
+                addMessage("Sorry, I'm having trouble connecting.", 'bot');
+            }
+        }
+
+        function addMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message message-${sender}`;
+            messageDiv.textContent = text;
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function showChatInterface() {
+            authContainer.style.display = 'none';
+            chatContainer.style.display = 'block';
+        }
+
+        function showAuthInterface() {
+            authContainer.style.display = 'flex';
+            chatContainer.style.display = 'none';
+            loginCard.style.display = 'block';
+            registerCard.style.display = 'none';
+            loginError.textContent = '';
+            registerError.textContent = '';
+        }
+    </script>
+</body>
+</html>

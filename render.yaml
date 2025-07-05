@@ -1,9 +1,18 @@
+# render.yaml
+
 services:
   - type: web
-    name: youtube-streamlink-ui
+    name: chatbot-flask-app
     env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
+    buildCommand: |
+      pip install -r requirements.txt
+    startCommand: |
+      gunicorn app:app --bind 0.0.0.0:$PORT
     envVars:
-      - key: PYTHON_VERSION
-        value: "3.10"
+      - key: SECRET_KEY
+        value: your-secret-key-here
+      - key: DATABASE_URL
+        value: postgres://vkn:LJI8O5ruUzgN4BIbFKZKTP0vgG8p6E9r@dpg-d1j1r72dbo4c73c0umlg-a.oregon-postgres.render.com/metric_team
+
+databases:
+  - name: metric_team
