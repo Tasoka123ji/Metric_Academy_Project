@@ -1,6 +1,6 @@
 services:
   - type: web
     name: chatbot-flask-app
-    env: python
+    env: python3.13
     buildCommand: "pip install -r requirements.txt"
     startCommand: "gunicorn app:app --bind 0.0.0.0:10000"
