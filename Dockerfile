@@ -23,5 +23,5 @@ COPY . .
 # Expose port (Flask default)
 EXPOSE 5000
 
-# Command to run app
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]
+# Command to run app with Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]

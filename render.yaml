@@ -1,8 +1,6 @@
 services:
   - type: web
-    name: chatbot-app
-    env: docker
-    plan: free
-    branch: main
-    region: oregon
-    dockerfilePath: ./Dockerfile
+    name: chatbot-flask-app
+    env: python3.13
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app --bind 0.0.0.0:10000"
