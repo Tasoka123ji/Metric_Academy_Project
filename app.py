@@ -7,7 +7,7 @@ import datetime
 from functools import wraps
 from flask_cors import CORS
 import os
-
+from video_text import transcribe_youtube_with_groq
 app = Flask(__name__, template_folder='templates')
 
 # ✅ Config
@@ -112,7 +112,7 @@ def login():
 def chat(current_user):
     if request.method == 'POST':
         data = request.get_json()
-        answer = f"You asked: '{data['question']}' — here is my answer!"
+        answer = transcribe_youtube_with_groq(data['question'])
 
         new_chat = Chat(
             question=data['question'],

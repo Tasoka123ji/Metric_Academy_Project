@@ -5,3 +5,5 @@ gunicorn
 jwt
 flask-cors
 werkzeug
+pytubefix
+groq
