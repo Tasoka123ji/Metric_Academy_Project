@@ -16,6 +16,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://vkn:LJI8O5ruUzgN4BIbFKZKTP
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+CORS(app)
+
 
 # ✅ Models
 class User(db.Model):
