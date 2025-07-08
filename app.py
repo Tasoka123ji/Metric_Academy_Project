@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify, make_response, render_template
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
 import jwt
 import datetime
@@ -8,18 +7,15 @@ from functools import wraps
 from flask_cors import CORS
 import os
 from video_text import transcribe_youtube_with_groq
+
 app = Flask(__name__, template_folder='templates')
 
 # ✅ Config
 app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://vkn:LJI8O5ruUzgN4BIbFKZKTP0vgG8p6E9r@dpg-d1j1r72dbo4c73c0umlg-a.oregon-postgres.render.com/metric_team'
-
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
-
-# ✅ CORS for local dev
-CORS(app)
 
 # ✅ Models
 class User(db.Model):
@@ -31,8 +27,8 @@ class User(db.Model):
 
 class Chat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    question = db.Column(db.String(500))
-    answer = db.Column(db.String(500))
+    question = db.Column(db.Text)  # ✅ now supports long text
+    answer = db.Column(db.Text)    # ✅ now supports long text
     timestamp = db.Column(db.DateTime, default=datetime.datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
@@ -67,7 +63,6 @@ def index():
 # ✅ Register
 @app.route('/register', methods=['POST'])
 def register():
-    
     data = request.get_json()
     if not data:
         return jsonify({'message': 'No input!'}), 400
@@ -76,11 +71,10 @@ def register():
     if existing_user:
         return jsonify({'message': 'Username already exists!'}), 409
 
-    hashed_password = generate_password_hash(data['password'], method='sha256')
     new_user = User(
         public_id=str(uuid.uuid4()),
         username=data['username'],
-        password=hashed_password
+        password=data['password']  # ⚠️ plain text (not secure!)
     )
     db.session.add(new_user)
     db.session.commit()
@@ -97,7 +91,7 @@ def login():
     if not user:
         return jsonify({'message': 'User not found!'}), 404
 
-    if check_password_hash(user.password, auth['password']):
+    if user.password == auth['password']:  # ⚠️ plain text check
         token = jwt.encode({
             'public_id': user.public_id,
             'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24)
@@ -135,6 +129,16 @@ def chat(current_user):
                 'timestamp': chat.timestamp.isoformat()
             })
         return jsonify({'chats': output})
+
+# ✅ Route to drop & recreate the Chat table (optional, for dev only)
+@app.route('/reset_chat_table', methods=['POST'])
+def reset_chat_table():
+    try:
+        Chat.__table__.drop(db.engine)
+        Chat.__table__.create(db.engine)
+        return jsonify({'message': 'Chat table dropped and recreated!'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # ✅ Init DB & run
 if __name__ == '__main__':
