@@ -10,15 +10,18 @@ def transcribe_youtube_with_groq(url):
     Download audio from YouTube as MP3 and transcribe it using Groq's distil-whisper-large-v3-en.
     """
 
-    ydl_opts = {
-        'format': 'bestaudio/best',
-        'outtmpl': 'audio.%(ext)s',
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',   # ✅ Force MP3
-            'preferredquality': '192',
-        }],
-    }
+ydl_opts = {
+    'format': 'bestaudio/best',
+    'outtmpl': 'audio.%(ext)s',
+    'cookiesfrombrowser': ('chrome',),  # if using `--cookies-from-browser`
+    # or use a cookies file:
+    'cookiefile': 'cookies.txt',
+    'postprocessors': [{
+        'key': 'FFmpegExtractAudio',
+        'preferredcodec': 'mp3',
+        'preferredquality': '192',
+    }],
+}
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
