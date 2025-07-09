@@ -7,3 +7,6 @@ flask-cors
 werkzeug
 pytubefix
 groq
+scikit-learn
+numpy
+yt_dlp
