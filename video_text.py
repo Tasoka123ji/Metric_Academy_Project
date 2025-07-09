@@ -54,4 +54,3 @@ def get_answer(question):
             response += chunk.choices[0].delta.content
 
     return response
-print(transcribe_youtube_with_groq("https://www.youtube.com/shorts/BzPKqymsR7A"))
