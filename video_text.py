@@ -7,7 +7,7 @@ def transcribe_youtube_with_groq(url):
     Download audio from YouTube and transcribe it using Groq's distil-whisper-large-v3-en.
     """
     # 1. Download audio
-    yt = YouTube(url)
+    yt = YouTube(url, client='WEB')
     audio_stream = yt.streams.filter(only_audio=True).first()
     output_file = audio_stream.download(filename="audio.m4a")
 
