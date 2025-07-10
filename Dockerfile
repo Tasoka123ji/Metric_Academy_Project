@@ -1,27 +1,25 @@
-# Use official Python image
-FROM python:3.10-slim
+# ───── base image ──────────────────────────────────────────────
+FROM python:3.10-slim AS runtime
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-# Set work directory
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && \
-    apt-get install -y gcc libpq-dev && \
-    rm -rf /var/lib/apt/lists/*
+# ───── system deps ─────────────────────────────────────────────
+# --no-install-recommends keeps the image small; cleaning apt cache
+# in the same layer avoids dangling files
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends gcc libpq-dev ffmpeg \
+ && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
+# ───── python deps ─────────────────────────────────────────────
 COPY requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
+RUN python -m pip install --upgrade pip wheel \
+ && python -m pip install -r requirements.txt
 
-# Copy project
+# ───── project ────────────────────────────────────────────────
 COPY . .
 
-# Expose port (Flask default)
 EXPOSE 5000
-
-# Command to run app with Gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]

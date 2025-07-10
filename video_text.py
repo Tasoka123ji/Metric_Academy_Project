@@ -1,29 +1,17 @@
-import os
 from groq import Groq
-import yt_dlp
+from pytubefix import YouTube
 
-client = Groq(api_key='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')
+client = Groq(api_key='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')
 
 def transcribe_youtube_with_groq(url):
     """
     Download audio from YouTube as MP3 and transcribe it using Groq's distil-whisper-large-v3-en.
     """
 
-    ydl_opts = {
-        'format': 'bestaudio/best',
-        'outtmpl': 'audio.%(ext)s',
-        'postprocessors': [{
-            'key': 'FFmpegExtractAudio',
-            'preferredcodec': 'mp3',   # ✅ Force MP3
-            'preferredquality': '192',
-        }],
-    }
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        output_file = ydl.prepare_filename(info).rsplit('.', 1)[0] + '.mp3'  # ✅ match extension
 
-    print(f"Downloaded: {output_file} ({os.path.getsize(output_file)} bytes)")
-
+    yt = YouTube(url)
+    audio_stream = yt.streams.filter(only_audio=True).first()
+    output_file = audio_stream.download(filename="audio.m4a")
     with open(output_file, "rb") as file:
         transcription = client.audio.transcriptions.create(
             file=("audio.mp3", file.read()),

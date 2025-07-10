@@ -8,6 +8,10 @@ from flask_cors import CORS
 import os
 from video_text import transcribe_youtube_with_groq
 
+os.system("> which ffmpeg ffprobe")
+os.system("/usr/bin/ffmpeg")
+os.system("/usr/bin/ffprobe")
+
 app = Flask(__name__, template_folder='templates')
 
 # ✅ Config
