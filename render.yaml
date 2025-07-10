@@ -1,7 +1,7 @@
 services:
   - type: web
     name: chatbot-flask-app
-    env: python3.13
+    env: python3.10
     dockerfile: Dockerfile  # Point to your Dockerfile
     buildCommand: docker build -t chatbot-app .
     startCommand: docker run -p 10000:10000 chatbot-app
