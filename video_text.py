@@ -5,7 +5,7 @@ import yt_dlp
 client = Groq(api_key='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')
 
 
-def download_audio(url: str, dst: str = "/tmp/audio.mp3") -> str:
+def transcribe_youtube_with_groq(url: str, dst: str = "/tmp/audio.mp3") -> str:
     ydl_opts = {
         "format": "bestaudio/best",
         "outtmpl": "/tmp/%(id)s.%(ext)s",
